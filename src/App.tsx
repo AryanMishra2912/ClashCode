@@ -1,10 +1,23 @@
-import './App.css'
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Home from "./pages/Home";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
+import ProblemList from "./pages/ProblemList";
+import ProblemDetail from "./pages/ProblemDetail";
 
 function App() {
-
   return (
-    <div className="bg-blue-500 p-4">Test</div>
-  )
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/problems" element={<ProblemList />} />
+        {/* The :id is a dynamic route parameter */}
+        <Route path="/problem/:id" element={<ProblemDetail />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
-export default App
+export default App;
