@@ -1,19 +1,30 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
-import pool from './db'; // Import your new database connection
+import dotenv from 'dotenv';
+import pool from './db'; 
+import authRoutes from './routes/authRoutes'; // Import your modular auth routes
+
+dotenv.config();
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
+// Global Middleware
 app.use(cors());
 app.use(express.json());
 
-// Basic API test route
+// ==========================================
+// API ROUTES
+// ==========================================
+app.use('/api/auth', authRoutes);
+
+// ==========================================
+// HEALTH CHECKS
+// ==========================================
 app.get('/api/status', (req: Request, res: Response) => {
   res.json({ message: "Backend is running and connected!", status: "OK" });
 });
 
-// Database test route (Time Query)
 app.get('/api/db-status', async (req: Request, res: Response) => {
   try {
     const result = await pool.query('SELECT NOW()');
@@ -27,6 +38,9 @@ app.get('/api/db-status', async (req: Request, res: Response) => {
   }
 });
 
+// ==========================================
+// SERVER INITIALIZATION
+// ==========================================
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
