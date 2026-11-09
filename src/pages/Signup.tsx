@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
+import { useAuth } from '../context/AuthContext';
 
 export default function Signup() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -15,11 +17,13 @@ export default function Signup() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, email, password }),
+        credentials: 'include', // Send/receive httpOnly cookies
       });
       const data = await response.json();
-      
-      if (data.token) {
-        localStorage.setItem('clashCode_token', data.token);
+
+      if (response.ok) {
+        // Token is now stored in an httpOnly cookie by the server automatically
+        login();
         navigate('/problems');
       } else {
         alert(data.error);
@@ -36,11 +40,12 @@ export default function Signup() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ idToken: credentialResponse.credential }),
+        credentials: 'include', // Send/receive httpOnly cookies
       });
-      const data = await response.json();
 
-      if (data.token) {
-        localStorage.setItem('clashCode_token', data.token);
+      if (response.ok) {
+        // Token is now stored in an httpOnly cookie by the server automatically
+        login();
         navigate('/problems');
       }
     } catch (err) {

@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import pool from './db'; 
+import cookieParser from 'cookie-parser';
 import authRoutes from './routes/authRoutes'; // Import your modular auth routes
 
 dotenv.config();
@@ -10,7 +11,12 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Global Middleware
-app.use(cors());
+
+app.use(cors({
+  origin: 'http://localhost:5173', // Replace with your exact React frontend URL
+  credentials: true, // Crucial: Allows cookies to be sent back and forth
+}));
+app.use(cookieParser());
 app.use(express.json());
 
 // ==========================================

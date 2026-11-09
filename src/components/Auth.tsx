@@ -17,11 +17,12 @@ export default function Auth({ onLogin }: AuthProps) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
+        credentials: 'include', // Send/receive httpOnly cookies
       });
       const data = await response.json();
-      
-      if (data.token) {
-        localStorage.setItem('clashCode_token', data.token);
+
+      if (response.ok) {
+        // Token is now stored in an httpOnly cookie by the server automatically
         onLogin(); // Trigger the state update in App.tsx
       } else {
         alert(data.error);
@@ -37,11 +38,11 @@ export default function Auth({ onLogin }: AuthProps) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ idToken: credentialResponse.credential }),
+        credentials: 'include', // Send/receive httpOnly cookies
       });
-      const data = await response.json();
 
-      if (data.token) {
-        localStorage.setItem('clashCode_token', data.token);
+      if (response.ok) {
+        // Token is now stored in an httpOnly cookie by the server automatically
         onLogin(); // Trigger the state update in App.tsx
       }
     } catch (err) {

@@ -47,12 +47,46 @@ export const googleLogin = async (req: Request, res: Response): Promise<void> =>
       process.env.JWT_SECRET as string,
       { expiresIn: '7d' }
     );
+    
+    const cookieOptions = {
+      httpOnly: true, // Prevents JavaScript from reading the cookie
+      secure: process.env.NODE_ENV === 'production', // Requires HTTPS in production
+      sameSite: 'lax' as const, // Protects against CSRF attacks
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days in milliseconds
+    };
 
-    res.json({ token: appToken, user });
+    res.cookie('clashCode_token', appToken, cookieOptions);
+    res.json({ user });
+    
   } catch (error) {
     console.error("Google Auth Error:", error);
     res.status(401).json({ error: "Authentication failed" });
   }
 };
 
-// You can add export const login = async (...) and export const signup = async (...) here later
+export const logout = (_req: Request, res: Response): void => {
+  res.clearCookie('clashCode_token', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax' as const,
+  });
+  res.json({ message: 'Logged out successfully' });
+};
+
+export const getMe = async (req: Request, res: Response): Promise<void> => {
+  try {
+    // req.user is set by authenticateToken middleware
+    const { userId } = req.user as { userId: number; role: string };
+    const result = await pool.query(
+      'SELECT id, username, email, role, profile_picture, rating FROM users WHERE id = $1',
+      [userId]
+    );
+    if (!result.rows[0]) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+    res.json({ user: result.rows[0] });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch user' });
+  }
+};

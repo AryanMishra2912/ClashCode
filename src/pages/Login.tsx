@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
+import { useAuth } from '../context/AuthContext';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleStandardLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -14,12 +16,14 @@ export default function Login() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
+        credentials: 'include', // Send/receive httpOnly cookies
       });
       const data = await response.json();
-      
-      if (data.token) {
-        localStorage.setItem('clashCode_token', data.token);
-        navigate('/problems'); // Redirect to problem list
+
+      if (response.ok) {
+        // Token is now stored in an httpOnly cookie by the server automatically
+        login();
+        navigate('/problems');
       } else {
         alert(data.error);
       }
@@ -28,23 +32,27 @@ export default function Login() {
     }
   };
 
-  const handleGoogleLogin = async (credentialResponse: any) => {
-    try {
-      const response = await fetch('http://localhost:3000/api/auth/google', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idToken: credentialResponse.credential }),
-      });
-      const data = await response.json();
+  // Inside your handleGoogleLogin function in frontend login.tsx
+const handleGoogleLogin = async (credentialResponse: any) => {
+  try {
+    const response = await fetch('http://localhost:3000/api/auth/google', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ idToken: credentialResponse.credential }),
+      credentials: 'include' // Crucial: Tells the browser to accept the Set-Cookie header
+    });
+    const data = await response.json();
 
-      if (data.token) {
-        localStorage.setItem('clashCode_token', data.token);
-        navigate('/problems'); // Redirect to problem list
-      }
-    } catch (err) {
-      console.error('Google login failed', err);
+    if (response.ok) {
+      // The browser automatically stored the HttpOnly cookie.
+      // We no longer use localStorage here.
+      login();
+      navigate('/problems');
     }
-  };
+  } catch (err) {
+    console.error('Google login failed', err);
+  }
+};
 
   return (
     <div style={{ maxWidth: '400px', margin: '50px auto', textAlign: 'center' }}>
