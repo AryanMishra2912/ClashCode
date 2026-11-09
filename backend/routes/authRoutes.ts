@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { googleLogin, logout, getMe } from '../controllers/authController';
+import { googleLogin, logout, getMe, standardLogin, standardSignup } from '../controllers/authController';
 import { authenticateToken } from '../middleware/auth';
 
 const router = Router();
@@ -8,8 +8,7 @@ const router = Router();
 router.post('/google', googleLogin);
 router.post('/logout', logout);
 router.get('/me', authenticateToken, getMe); // Protected: check current session
-
-// router.post('/login', standardLogin);
-// router.post('/signup', standardSignup);
+router.post('/login', standardLogin);
+router.post('/signup', standardSignup);
 
 export default router;

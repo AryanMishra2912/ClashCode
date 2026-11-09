@@ -7,14 +7,15 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
   const token = req.cookies.clashCode_token;
 
   if (!token) {
-    return res.status(401).json({ error: 'Access denied. No token provided.' });
+    res.status(401).json({ error: 'Access denied. No token provided.' });
+    return;
   }
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET as string);
-    req.user = decoded;
+    req.user = decoded as { userId: number; role: string };
     next();
   } catch (error) {
-    return res.status(403).json({ error: 'Invalid or expired token.' });
+    res.status(403).json({ error: 'Invalid or expired token.' });
   }
 };
